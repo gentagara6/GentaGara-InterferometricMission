@@ -1,0 +1,882 @@
+<title>GRAIL Study Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; numbered steps for the real scoring pipeline, then a playground, then question cards. */
+:root {
+  --bg: #f3f5fa;
+  --surface: #ffffff;
+  --fg: #16203a;
+  --muted: #5b6784;
+  --line: #d5dbea;
+  --grid: #e4e8f2;
+  --accent: #2e58cc;
+  --accent-soft: #e2e9fb;
+  --warm: #b8650f;
+  --warm-soft: #fbeedd;
+  --bad: #c03535;
+  --bad-soft: #fbe4e4;
+  --good: #23824f;
+  --good-soft: #e0f3e8;
+  --earth: #3a7bd5;
+  --moon: #9aa3b5;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1322; --surface: #151d31; --fg: #e5eaf6; --muted: #9ba7c2; --line: #2a3654; --grid: #222c45;
+    --accent: #87a3f7; --accent-soft: #1f2b4d; --warm: #f2a65c; --warm-soft: #3a2a17;
+    --bad: #f07f7f; --bad-soft: #3d1f24; --good: #61cc92; --good-soft: #17352a; --earth: #5c97ea; --moon: #8a93a6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1322; --surface: #151d31; --fg: #e5eaf6; --muted: #9ba7c2; --line: #2a3654; --grid: #222c45;
+  --accent: #87a3f7; --accent-soft: #1f2b4d; --warm: #f2a65c; --warm-soft: #3a2a17;
+  --bad: #f07f7f; --bad-soft: #3d1f24; --good: #61cc92; --good-soft: #17352a; --earth: #5c97ea; --moon: #8a93a6;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.15rem; }
+p { margin: 0; max-width: 66ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+code { background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 20px; }
+.lede { font-size: 1.15rem; }
+.hero { display: flex; flex-direction: column; gap: 16px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { font-size: 0.9rem; text-decoration: none; color: var(--accent); border: 1px solid var(--line); background: var(--surface); padding: 4px 12px; border-radius: 999px; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--accent); }
+a:focus-visible, button:focus-visible, summary:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+
+.step { display: grid; grid-template-columns: 44px 1fr; gap: 16px; }
+.step .num { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--accent); width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; }
+.step .body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.steps { display: flex; flex-direction: column; gap: 36px; }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: 0.88rem; color: var(--muted); }
+.figscroll { overflow-x: auto; }
+
+/* SVG classes */
+.s-grid { stroke: var(--grid); stroke-width: 1; fill: none; }
+.s-frame { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.s-frame-dash { stroke: var(--muted); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+.s-dot { fill: var(--accent); }
+.s-dot-warm { fill: var(--warm); }
+.s-dot-bad { fill: var(--bad); }
+.s-hollow { fill: none; stroke: var(--warm); stroke-width: 1.5; }
+.s-cell { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1; }
+.s-text { fill: var(--fg); font-family: var(--font-body); font-size: 13px; }
+.s-small { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.s-label { fill: var(--fg); font-family: var(--font-display); font-size: 14px; font-weight: 600; }
+.s-arrow { stroke: var(--accent); stroke-width: 2; fill: none; }
+.s-arrow-warm { stroke: var(--warm); stroke-width: 2; fill: none; }
+.s-arrow-bad { stroke: var(--bad); stroke-width: 2.5; fill: none; }
+.s-orbit { stroke: var(--accent); stroke-width: 1.5; fill: none; stroke-dasharray: 6 5; }
+.s-earth { fill: var(--earth); }
+.s-moon { fill: var(--moon); }
+.s-track { stroke: var(--line); stroke-width: 18; fill: none; }
+.s-lane { stroke: var(--muted); stroke-width: 1; fill: none; stroke-dasharray: 4 4; }
+.s-ruler { stroke: var(--fg); stroke-width: 2; }
+.s-tick { stroke: var(--muted); stroke-width: 1; }
+.s-mark { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+.s-arc { stroke: var(--warm); stroke-width: 1.5; fill: none; }
+.s-x { stroke: var(--bad); stroke-width: 2.5; }
+.s-fillbg { fill: var(--surface); }
+
+/* decision vector strip */
+.xstrip { display: flex; flex-wrap: wrap; gap: 6px; }
+.xgroup { display: flex; flex-direction: column; gap: 4px; }
+.xgroup .lab { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.xcells { display: flex; gap: 2px; }
+.xcells span { width: 26px; height: 26px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.72rem; border-radius: 3px; }
+.xpos span { background: var(--accent-soft); color: var(--accent); }
+.xvel span { background: var(--warm-soft); color: var(--warm); }
+
+/* flow boxes */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.box { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 12px; font-family: var(--font-mono); font-size: 0.85rem; }
+.box.strong { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.flow .arr { color: var(--muted); font-family: var(--font-mono); }
+
+.formula { font-family: var(--font-mono); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; white-space: nowrap; font-size: 0.95rem; }
+
+.callout { border-left: 3px solid var(--warm); background: var(--warm-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; gap: 6px; }
+.callout strong { color: var(--warm); }
+
+/* playground */
+.pg { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 680px) { .pg { grid-template-columns: 1fr; } }
+.pg svg { cursor: pointer; touch-action: manipulation; }
+.stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; font-family: var(--font-mono); text-align: right; }
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.open { background: var(--warm-soft); color: var(--warm); }
+.pill.next { background: var(--accent-soft); color: var(--accent); }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-size: 0.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+#pgRepeats { font-family: var(--font-mono); font-size: 0.85rem; }
+
+/* progress lists */
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+
+/* question cards */
+.qcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.qcard.current { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.qhead { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+.qhead h3 { flex: 1 1 260px; }
+.qcard ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+details { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--bg); }
+details[open] { padding-bottom: 12px; }
+summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+details p { margin-top: 8px; }
+.hints { display: flex; flex-direction: column; gap: 8px; }
+textarea { width: 100%; min-height: 90px; font: inherit; font-size: 0.95rem; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); resize: vertical; }
+.fill td input { width: 70px; font: inherit; font-family: var(--font-mono); padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); color: var(--fg); }
+.conv { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.conv input { font: inherit; font-family: var(--font-mono); padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); width: 180px; }
+#convOut { font-family: var(--font-mono); font-size: 0.9rem; }
+.note { font-size: 0.88rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">ESA SpOC 3 · GECCO 2024 · Interferometric Mission</div>
+  <h1>GRAIL Study Guide</h1>
+  <p class="lede">You choose where a small swarm of satellites starts, and how fast it moves, around a "mothership" flying between Earth and the Moon. Together the satellites work as one giant telescope. The telescope sees most when <strong>every pair of satellites is a different arrow apart</strong>, and the swarm has to stay that way after one orbit and after two.</p>
+  <nav class="toc" aria-label="Contents">
+    <a href="#how">How it works</a>
+    <a href="#playground">Arrow playground</a>
+    <a href="#progress">Your progress</a>
+    <a href="#questions">Questions for you</a>
+  </nav>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Instance</th><th>Satellites</th><th>Grid</th><th>Orbit</th><th>Best possible per plane</th></tr></thead>
+      <tbody>
+        <tr><td>tiny-observatory-in-dro</td><td>5</td><td>11 × 11</td><td>DRO (stable)</td><td class="mono">21 / 441 = 0.0476</td></tr>
+        <tr><td>large-observatory-in-dro</td><td>40</td><td>21 × 21</td><td>DRO (stable)</td><td class="mono">1561 / 1681 = 0.929*</td></tr>
+        <tr><td>large-observatory-in-halo</td><td>40</td><td>21 × 21</td><td>Halo (unstable)</td><td class="mono">1561 / 1681 = 0.929*</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">* An upper bound only. Nobody has shown that it can actually be reached.</p>
+</header>
+
+<!-- ============================ HOW IT WORKS ============================ -->
+<section id="how">
+  <div class="eyebrow">Part 1</div>
+  <h2>How the project works, in 8 steps</h2>
+  <p>These are the same steps <code>grail_eval.py</code> runs, in the same order. Each one has a picture.</p>
+
+  <div class="steps">
+
+    <!-- 1 -->
+    <div class="step"><div class="num">1</div><div class="body">
+      <h3>The setting: a mothership in an Earth–Moon orbit</h3>
+      <p>The physics model is called the <strong>CR3BP</strong> (circular restricted three-body problem). A tiny spacecraft feels the gravity of Earth and Moon. The coordinates <em>rotate with the Earth–Moon line</em>, so in the picture Earth and Moon stay still. In these coordinates the mothership loops around the same path over and over: a <strong>DRO</strong> (distant retrograde orbit, stable) or a <strong>halo</strong> orbit (unstable).</p>
+      <figure>
+        <svg viewBox="0 0 640 250" role="img" aria-label="Earth on the left, Moon on the right, a dashed loop around the Moon with the mothership on its Earth side moving in the plus y direction">
+          <circle class="s-earth" cx="100" cy="125" r="34"/>
+          <text class="s-label" x="100" y="190" text-anchor="middle">Earth</text>
+          <circle class="s-moon" cx="470" cy="125" r="12"/>
+          <text class="s-label" x="470" y="160" text-anchor="middle">Moon</text>
+          <ellipse class="s-orbit" cx="470" cy="125" rx="78" ry="100"/>
+          <text class="s-small" x="560" y="40">DRO loop</text>
+          <circle class="s-dot-warm" cx="392" cy="125" r="7"/>
+          <text class="s-text" x="300" y="150" text-anchor="middle">mothership</text>
+          <line class="s-arrow-warm" x1="392" y1="116" x2="392" y2="72"/>
+          <path class="s-arrow-warm" d="M386 80 L392 70 L398 80"/>
+          <text class="s-text" x="400" y="62">direction of travel (+y)</text>
+          <line class="s-tick" x1="40" y1="230" x2="80" y2="230"/><path class="s-arrow" d="M74 225 L82 230 L74 235" style="stroke:var(--muted)"/>
+          <text class="s-small" x="88" y="234">x</text>
+          <line class="s-tick" x1="40" y1="230" x2="40" y2="200"/><path class="s-arrow" d="M35 206 L40 198 L45 206" style="stroke:var(--muted)"/>
+          <text class="s-small" x="34" y="194">y</text>
+        </svg>
+        <figcaption>Not to scale. The mothership starts on the x-axis, and its starting velocity points only along +y.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 2 -->
+    <div class="step"><div class="num">2</div><div class="body">
+      <h3>Your choice: 6 numbers per satellite</h3>
+      <p>For each satellite you pick a start position <span class="mono">(dx, dy, dz)</span> and a start velocity <span class="mono">(dvx, dvy, dvz)</span>, both measured <em>relative to the mothership</em>. All the numbers go into one long list <span class="mono">x</span>, grouped <strong>by quantity, not by satellite</strong>. Here it is for 5 satellites (30 numbers):</p>
+      <figure>
+        <div class="xstrip">
+          <div class="xgroup xpos"><div class="lab">dx</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="xgroup xpos"><div class="lab">dy</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="xgroup xpos"><div class="lab">dz</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="xgroup xvel"><div class="lab">dvx</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="xgroup xvel"><div class="lab">dvy</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="xgroup xvel"><div class="lab">dvz</div><div class="xcells"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div></div>
+        </div>
+        <figcaption>Blue = positions, allowed range [−1, 1] (exactly the grid's edges; the mothership is at 0). Orange = velocities, allowed range [−10, 10]. Satellite 3 is the third box in every group.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 3 -->
+    <div class="step"><div class="num">3</div><div class="body">
+      <h3>The physics shortcut: one matrix per snapshot</h3>
+      <p>We don't simulate every satellite. The code simulates the mothership <strong>once</strong> and builds three 6×6 matrices called <strong>STMs</strong> (state transition matrices), one for each snapshot time. Any satellite's state later is just <em>matrix × start state</em>, so the same recipe works for every satellite.</p>
+      <figure>
+        <div class="flow">
+          <div class="box">dx dy dz dvx dvy dvz<br><span class="muted">start (6 numbers)</span></div>
+          <div class="arr">→ ×</div>
+          <div class="box strong">STM<sub>k</sub><br>6 × 6</div>
+          <div class="arr">→</div>
+          <div class="box">x y z vx vy vz<br><span class="muted">at snapshot k</span></div>
+          <div class="arr">→</div>
+          <div class="box strong">keep x y z</div>
+        </div>
+        <figcaption>"Linear" means two things: if you double the start state, the result doubles; and the result for (A + B) is the result for A plus the result for B. Keep this in mind for Question 4.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 4 -->
+    <div class="step"><div class="num">4</div><div class="body">
+      <h3>Three snapshots, and the grid grows a little</h3>
+      <p>Positions are checked at <span class="mono">t0</span> (start), <span class="mono">t1</span> (after 1 orbit) and <span class="mono">t2</span> (after 2 orbits). At t1 and t2 every position is divided by <strong>1.23</strong>, which is the same as making the grid 1.23× bigger (1.23 both times, not 1.23²). A satellite with <em>any</em> coordinate outside (−1, 1) is <strong>dropped</strong> from that snapshot.</p>
+      <figure class="figscroll">
+        <svg id="figSnap" viewBox="0 0 640 260" role="img" aria-label="Three grids for t0, t1 and t2; at t1 and t2 the grid is 1.23 times larger and one satellite has drifted off the top of the grid and is crossed out"></svg>
+        <figcaption>The orange satellite drifts along y. At t1 it's still on the bigger grid; at t2 it's off the grid and stops counting.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 5 -->
+    <div class="step"><div class="num">5</div><div class="body">
+      <h3>Snap to the grid</h3>
+      <p>Each position becomes a grid square (on the 11-grid, a number from 0 to 10 per axis). Two satellites in the same square count as <strong>one</strong>. The real grid is a 3D box of g × g × g cubes. This picture shows just one layer.</p>
+      <figure>
+        <svg id="figSnapCells" viewBox="0 0 640 250" role="img" aria-label="Exact positions shown as hollow circles, the squares they snap to shaded; two circles share one square"></svg>
+        <figcaption>Hollow circle = exact position. Shaded square = the square it snaps to. The two circles at the top right share one square, so only one counts: a wasted satellite.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 6 -->
+    <div class="step"><div class="num">6</div><div class="body">
+      <h3>Three shadows of the 3D box</h3>
+      <p>The 3D box is flattened three ways, like shining a light through it and looking at the shadow: <strong>XY</strong> (ignore z), <strong>XZ</strong> (ignore y), <strong>YZ</strong> (ignore x). Every plane is scored on its own.</p>
+      <figure class="figscroll">
+        <svg id="figShadows" viewBox="0 0 640 230" role="img" aria-label="One satellite at square (2,7,4) appears at (2,7) in XY, (2,4) in XZ and (7,4) in YZ"></svg>
+        <figcaption>One satellite in square (x, y, z) = (2, 7, 4) leaves a shadow at (2, 7) in XY, (2, 4) in XZ and (7, 4) in YZ.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 7 -->
+    <div class="step"><div class="num">7</div><div class="body">
+      <h3>Count the different arrows (baselines)</h3>
+      <p>In each plane, draw an arrow from every satellite to every other one. A pair gives <em>two</em> arrows (A→B and B→A), and the "zero arrow" (a satellite to itself) also counts once. The code's <strong>autocorrelation</strong> step does exactly this counting. Only <strong>different</strong> arrows count, so if two pairs share an arrow, you lose one.</p>
+      <figure>
+        <svg viewBox="0 0 640 200" role="img" aria-label="Three satellites A, B, C on a small grid with arrows between them, and a list of the 7 different arrows">
+          <g transform="translate(20,20)">
+            <!-- 5x3 grid, cell 40 -->
+            <g id="miniGrid"></g>
+            <line class="s-arrow" x1="20" y1="100" x2="60" y2="100"/>
+            <line class="s-arrow" x1="20" y1="100" x2="140" y2="60"/>
+            <line class="s-arrow" x1="60" y1="100" x2="140" y2="60"/>
+            <circle class="s-dot" cx="20" cy="100" r="8"/><text class="s-label" x="14" y="136">A</text>
+            <circle class="s-dot" cx="60" cy="100" r="8"/><text class="s-label" x="54" y="136">B</text>
+            <circle class="s-dot" cx="140" cy="60" r="8"/><text class="s-label" x="134" y="40">C</text>
+          </g>
+          <g transform="translate(260,30)">
+            <text class="s-small" x="0" y="0">A=(0,0)  B=(1,0)  C=(3,1)</text>
+            <text class="s-text" x="0" y="28">A→B (1,0)     B→A (−1,0)</text>
+            <text class="s-text" x="0" y="52">A→C (3,1)     C→A (−3,−1)</text>
+            <text class="s-text" x="0" y="76">B→C (2,1)     C→B (−2,−1)</text>
+            <text class="s-text" x="0" y="100">zero arrow (0,0)</text>
+            <text class="s-label" x="0" y="132">7 different arrows = 3·2 + 1</text>
+          </g>
+        </svg>
+        <figcaption>With n satellites the best you can get is n(n−1) + 1 different arrows. For 5 satellites that's 21.</figcaption>
+      </figure>
+    </div></div>
+
+    <!-- 8 -->
+    <div class="step"><div class="num">8</div><div class="body">
+      <h3>Turn it into one score</h3>
+      <p>A g-grid allows (2g−1)² possible arrows (each arrow component goes from −(g−1) to g−1). The <strong>fill factor</strong> of a plane is the share of those arrows you actually have. Add the three planes at each snapshot, take the <strong>worst</strong> snapshot, and flip the sign, because the platform minimises.</p>
+      <div class="formula">fill factor = (different arrows) / (2g − 1)²</div>
+      <div class="formula">fitness = − min over {t0, t1, t2} of ( FF<sub>XY</sub> + FF<sub>XZ</sub> + FF<sub>YZ</sub> )</div>
+      <p>Example, a perfect tiny solution: 21 / 441 = 0.0476 per plane, × 3 planes = 0.1429, so fitness = <strong>−0.1429</strong>. Lower is better. If one snapshot has everybody off the grid, that snapshot scores 0, and so does the whole solution.</p>
+      <div class="callout"><strong>Why "min", not "max"?</strong><span>The website formula says max, but the code uses min. The weakest snapshot sets your score, the way a chain is only as strong as its weakest link.</span></div>
+    </div></div>
+
+  </div>
+</section>
+
+<!-- ============================ PLAYGROUND ============================ -->
+<section id="playground">
+  <div class="eyebrow">Part 2 · Try it</div>
+  <h2>Arrow playground</h2>
+  <p>This is one flat plane of the 11 × 11 grid. Click squares to add or remove satellites. The page draws every pair and colours an arrow <span style="color:var(--bad);font-weight:600">red</span> when another pair has the same arrow. This is exactly what step 7 counts. (For Question 1, work it out on paper first, then check here if you like.)</p>
+  <figure>
+    <div class="pg">
+      <svg id="pg" viewBox="0 0 330 330" role="img" aria-label="Clickable 11 by 11 grid"></svg>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <dl class="stats">
+          <dt>Satellites n</dt><dd id="pgN">0</dd>
+          <dt>Pairs n(n−1)/2</dt><dd id="pgPairs">0</dd>
+          <dt>Different arrows (with ±, zero)</dt><dd id="pgDistinct">0</dd>
+          <dt>Best possible n(n−1)+1</dt><dd id="pgMax">0</dd>
+          <dt>Fill factor (÷ 441)</dt><dd id="pgFF">0</dd>
+        </dl>
+        <div><span id="pgStatus" class="pill ok">no repeats</span></div>
+        <div id="pgRepeats" class="muted"></div>
+        <div class="btnrow">
+          <button type="button" id="pgClear">Clear</button>
+          <button type="button" id="pgExample">Load example</button>
+        </div>
+      </div>
+    </div>
+    <figcaption>The example has 4 satellites and one repeated arrow. Can you move one satellite so every arrow is different?</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ PROGRESS ============================ -->
+<section id="progress">
+  <div class="eyebrow">Part 3</div>
+  <h2>Your progress so far</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>You've learned</h3>
+      <ul>
+        <li>What a baseline and a Golomb ruler are.</li>
+        <li>n satellites give n(n−1)/2 pairs.</li>
+        <li>How to work out the best fill factor (you found 1561/1681 yourself).</li>
+        <li>Random solutions almost always score 0, because satellites drift off along y.</li>
+        <li>A satellite at exactly (0,0,0) with zero velocity stays at the centre, and it counts.</li>
+        <li>DRO eigenvalues all have size 1 (stable). The halo has 1.19 and 0.84 (one direction grows).</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Lessons from mistakes</h3>
+      <ul>
+        <li>Check <strong>every</strong> pair, not just neighbours.</li>
+        <li>The number of baselines is n(n−1)/2, not n.</li>
+      </ul>
+      <h3 style="margin-top:8px">Watch out</h3>
+      <ul>
+        <li><code>cell_to_pos(5, 11)</code> gives 0.0909, not 0. A satellite at "square 5" is not exactly at the mothership, so it can drift.</li>
+        <li>The scoring box is 3D (g × g × g), even though each plane is 2D.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ QUESTIONS ============================ -->
+<section id="questions">
+  <div class="eyebrow">Part 4</div>
+  <h2>Questions for you</h2>
+  <p>We'll go one at a time, starting with Question 1. Each card has a picture, what to try, hints you can open if you get stuck, and a box for your answer. <strong>Copy answer</strong> copies it so you can paste it into the chat.</p>
+
+  <!-- Q1 -->
+  <article class="qcard" id="q1">
+    <div class="qhead"><h3>1 · Is {0, 1, 3, 6} a Golomb ruler?</h3><span class="pill ok">Done</span></div>
+    <div class="callout"><strong>Your result</strong><span>No: 0–3 and 3–6 are both 3, and 4 is missing (pigeonhole: 6 pairs, 6 slots, so one repeat forces one gap). Your fix {0, 1, 4, 6} gives 1, 2, 3, 4, 5, 6 exactly once: a perfect Golomb ruler.</span></div>
+    <figure>
+      <svg viewBox="0 0 640 200" role="img" aria-label="A ruler from 0 to 6 with marks at 0, 1, 3 and 6, and six arcs joining every pair of marks, each labeled with a question mark">
+        <g id="q1ruler"></g>
+      </svg>
+      <figcaption>Six arcs, one for each pair. Every arc needs its own length, with no two the same.</figcaption>
+    </figure>
+    <ol>
+      <li>Fill in the distance for each pair (bigger mark minus smaller mark).</li>
+      <li>Do any two distances repeat?</li>
+      <li>Which numbers from 1 to 6 show up, and which are missing? If none is missing, the ruler is called <em>perfect</em>.</li>
+    </ol>
+    <div class="tablewrap">
+      <table class="fill">
+        <thead><tr><th>Pair</th><th>0–1</th><th>0–3</th><th>0–6</th><th>1–3</th><th>1–6</th><th>3–6</th></tr></thead>
+        <tbody><tr><td>Distance</td>
+          <td><input id="q1d1" inputmode="numeric" aria-label="distance 0 to 1"></td>
+          <td><input id="q1d2" inputmode="numeric" aria-label="distance 0 to 3"></td>
+          <td><input id="q1d3" inputmode="numeric" aria-label="distance 0 to 6"></td>
+          <td><input id="q1d4" inputmode="numeric" aria-label="distance 1 to 3"></td>
+          <td><input id="q1d5" inputmode="numeric" aria-label="distance 1 to 6"></td>
+          <td><input id="q1d6" inputmode="numeric" aria-label="distance 3 to 6"></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="hints">
+      <details><summary>Hint 1</summary><p>Write the six distances in order from smallest to largest. Repeats stand out right away.</p></details>
+      <details><summary>Hint 2: why this matters</summary><p>This is step 7 on a line instead of a grid. "No repeated distance" means "no wasted baseline". "Perfect" means there are also no gaps. That's the 1D version of asking whether 0.929 can actually be reached.</p></details>
+    </div>
+    <textarea id="q1a" placeholder="My answer: Golomb? yes/no, because… Perfect? yes/no, because…"></textarea>
+    <div class="btnrow"><button type="button" class="primary" data-copy="q1">Copy answer</button></div>
+  </article>
+
+  <!-- Q2 -->
+  <article class="qcard" id="q2">
+    <div class="qhead"><h3>2 · Can a computer just try every placement?</h3><span class="pill ok">Done</span></div>
+    <div class="callout"><strong>Your result</strong><span>121 choose 5 = 198,792,594 → about 55 hours: feasible. 441 choose 40 ≈ 1.2 × 10⁵⁷ → about 2.8 × 10³⁶ times the age of the universe: impossible. This "combinatorial explosion" is why we need clever search instead of trying everything.</span></div>
+    <figure>
+      <svg id="q2grid" viewBox="0 0 640 260" role="img" aria-label="An 11 by 11 grid with 5 satellites, next to a 21 by 21 grid with 40 satellites"></svg>
+      <figcaption>Left: one of the many ways to put 5 satellites on 121 squares. Right: one way to put 40 satellites on 441 squares.</figcaption>
+    </figure>
+    <ol>
+      <li>How many ways are there to choose 5 squares out of 121? (The order you pick them in doesn't matter.)</li>
+      <li>Same question for 40 squares out of 441.</li>
+      <li>One check takes about 1 ms. Put your numbers into the converter below. Is "try them all" feasible?</li>
+    </ol>
+    <div class="conv">
+      <label for="convIn">Number of checks:</label>
+      <input id="convIn" placeholder="e.g. 3.5e9">
+      <span id="convOut" class="muted">type a number (1e9 style is fine)</span>
+    </div>
+    <div class="hints">
+      <details><summary>Hint 1</summary><p>"n choose k" = n! / (k! · (n−k)!). For 121 choose 5 you can cancel most of the factorial: (121·120·119·118·117) / (5·4·3·2·1).</p></details>
+      <details><summary>Hint 2</summary><p>For 441 choose 40 the number is huge. Use Python: <code>import math; math.comb(441, 40)</code>. Then count its digits.</p></details>
+      <details><summary>Bonus thought</summary><p>This version is simplified to 2D squares. The real box is 3D (11³ = 1331 cubes), and you also choose velocities, which are real numbers, not grid squares. What does that do to "try everything"?</p></details>
+    </div>
+    <textarea id="q2a" placeholder="121 choose 5 = … , time = …   441 choose 40 = … , time = …   Feasible? …"></textarea>
+    <div class="btnrow"><button type="button" class="primary" data-copy="q2">Copy answer</button></div>
+  </article>
+
+  <!-- Q3 -->
+  <article class="qcard" id="q3">
+    <div class="qhead"><h3>3 · Why do satellites drift along y, but not along x or z?</h3><span class="pill ok">Done</span></div>
+    <div class="callout"><strong>The answer</strong><span>An x offset puts the satellite in a different lane, so its lap time is slightly different and it falls further behind (or gets further ahead) every orbit. A y offset keeps the same lane and lap time, so it only swings. A z offset keeps the same lane and lap time, so it only bobs up and down. The mothership travels along y, so "ahead or behind on the track" shows up as y: that's why the drift is in y.</span></div>
+    <figure>
+      <svg viewBox="0 0 640 240" role="img" aria-label="An oval running track with two lanes; the mothership runs in one lane and a satellite in a slightly different lane pulls ahead along the track">
+        <ellipse class="s-track" cx="320" cy="120" rx="220" ry="85"/>
+        <ellipse class="s-lane" cx="320" cy="120" rx="228" ry="93"/>
+        <ellipse class="s-lane" cx="320" cy="120" rx="212" ry="77"/>
+        <circle class="s-dot-warm" cx="320" cy="27" r="8"/>
+        <text class="s-text" x="320" y="16" text-anchor="middle">mothership (outer lane)</text>
+        <circle class="s-dot" cx="380" cy="45" r="7"/>
+        <text class="s-text" x="392" y="66">satellite (inner lane)</text>
+        <path class="s-arrow" d="M330 210 Q 400 210 450 198"/>
+        <path class="s-arrow" d="M442 192 L452 197 L444 205"/>
+        <text class="s-small" x="300" y="232">along the track = the direction of travel</text>
+        <line class="s-arrow-warm" x1="100" y1="120" x2="70" y2="120"/>
+        <text class="s-small" x="20" y="108">across</text>
+      </svg>
+      <figcaption>An analogy, not the real orbit: two runners in slightly different lanes take slightly different times per lap.</figcaption>
+    </figure>
+    <p><strong>Simple version:</strong> fill in the blanks (all velocities are 0).</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Start offset in</th><th>What it does to the "lane"</th><th>Lap time vs mothership</th><th>What you see</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">x</td><td>different lane</td><td>___</td><td>drifts along ___, more every orbit</td></tr>
+          <tr><td class="mono">y</td><td>same lane, a few steps ahead</td><td>___</td><td>swings, but comes back</td></tr>
+          <tr><td class="mono">z</td><td>same lane, lifted up</td><td>___</td><td>___ up and down</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ol>
+      <li>Fill in the four blanks.</li>
+      <li>Last step: the mothership's start velocity <code>DRO_IC</code> is almost all <span class="mono">vy</span>. So which direction is "along the track"? Why does that make the drift show up in <strong>y</strong>?</li>
+    </ol>
+    <div class="hints">
+      <details><summary>Hint 1</summary><p>Think of runners: a small difference in lane width doesn't grow (they stay in their lanes), but a small difference in lap time adds up every lap.</p></details>
+      <details><summary>Hint 2</summary><p>Check it with numbers: run Experiment 2 with a start of (0.3, 0, 0) and zero velocity, and watch which coordinate gets big at t1 and t2.</p></details>
+    </div>
+    <textarea id="q3a" placeholder="y drifts because… x and z don't because…"></textarea>
+    <div class="btnrow"><button type="button" class="primary" data-copy="q3">Copy answer</button></div>
+  </article>
+
+  <!-- Q4 -->
+  <article class="qcard" id="q4">
+    <div class="qhead"><h3>4 · 6 numbers in, 9 numbers out: what does linear algebra say?</h3><span class="pill ok">Done</span></div>
+    <div class="callout"><strong>Your result</strong><span>At t0 the satellite is at its start position (STM₀ = identity), so the 3 position knobs set t0 directly. That leaves 3 velocity knobs for 6 targets at t1 and t2: an overdetermined system, so usually no exact solution, only a best compromise (least squares) that keeps positions inside the grid. Example: y at t1 wants dvy ≈ 0.69, y at t2 wants ≈ 0.78; the good range 0.71–0.80 is the compromise. Smarter search: search the 3 positions, calculate the 3 velocities.</span></div>
+    <figure>
+      <div class="flow">
+        <div class="box">dx dy dz<br>dvx dvy dvz<br><span class="muted">6 numbers you choose</span></div>
+        <div class="arr">→ 3 STMs (linear) →</div>
+        <div class="box">t0: x y z<br>t1: x y z<br>t2: x y z<br><span class="muted">9 numbers you'd like to control</span></div>
+      </div>
+      <figcaption>Per satellite. The map is the same for every satellite.</figcaption>
+    </figure>
+    <div class="callout"><strong>What an STM is, simply</strong><span>A recipe card. For each later coordinate, it says how much of each of your 6 start numbers to mix in. Real example from your code (after ÷ 1.23): <span class="mono">y after 2 orbits = 38.84 × dx − 15.01 × dvy</span> (+ tiny bits of the others). Your Question 5 rule is this recipe set to 0: 38.84 / 15.01 ≈ 2.6, so vy ≈ 2.6 × x.</span></div>
+    <p><strong>Simple version:</strong> three small questions.</p>
+    <ol>
+      <li><strong>t0:</strong> nothing has moved yet. Where is the satellite at t0? So how many of the 9 outputs do your 3 start positions set directly?</li>
+      <li><strong>t1 and t2:</strong> that leaves 3 velocity "knobs" for 6 outputs. In Question 5, 1 knob (vy) fixed t2 but not t1. With 3 knobs and 6 targets, can you usually hit all 6 exactly?</li>
+      <li><strong>The trick:</strong> you found vy = 2.6 × x by solving one equation, not by guessing. How could that help a search with 40 satellites?</li>
+    </ol>
+    <div class="hints">
+      <details><summary>Hint 1</summary><p>Look at <code>make_stms</code>: the integration starts from <code>np.eye(6)</code>.</p></details>
+      <details><summary>Hint 2 (bigger hint)</summary><p>Once the start position is fixed, the later positions depend linearly on the 3 velocity numbers. A linear system can be solved, or solved "as close as possible" (least squares, <code>np.linalg.lstsq</code>), instead of guessed.</p></details>
+    </div>
+    <textarea id="q4a" placeholder="6 vs 9 means… STM_0 is… so a smarter search would…"></textarea>
+    <div class="btnrow"><button type="button" class="primary" data-copy="q4">Copy answer</button></div>
+  </article>
+
+  <!-- Q5 -->
+  <article class="qcard" id="q5">
+    <div class="qhead"><h3>5 · Experiment 2 (homework): which start velocity keeps one satellite on the grid?</h3><span class="pill ok">Done</span></div>
+    <div class="callout"><strong>Your result</strong><span>x = 0.3: on at all three times for vy 0.71–0.80, best 0.78. x = 0.6: best vy 1.55 (double), but it swings to y = −1.56 at t1, so it's never on three times. x = −0.3: vy = −0.78 (mirror). Rule: good vy ≈ 2.6 × x, because the map is linear. With vy alone, only starts up to about |x| ≈ 0.38 survive the t1 swing.</span></div>
+    <figure>
+      <svg id="q5fig" viewBox="0 0 640 300" role="img" aria-label="Top view of the grid with a satellite at x equals 0.3 and arrows showing the vx and vy directions you can sweep"></svg>
+      <figcaption>Top view (XY). The satellite starts at (0.3, 0, 0). You sweep one velocity component at a time.</figcaption>
+    </figure>
+    <ol>
+      <li>Run <code>python experiments.py</code> with <code>which = 1</code> (sweep vy) and <code>values = np.linspace(-1, 1, 21)</code>.</li>
+      <li>Find the rows that say <span class="mono">on</span> at all three times. Then zoom in: narrow <code>values</code> to that range and run again.</li>
+      <li>Try <code>which = 0</code> (vx) and <code>which = 2</code> (vz). Does sweeping those help on their own?</li>
+      <li>Change the start to (0.6, 0, 0) and (−0.3, 0, 0). Does the good velocity change? Is there a simple rule?</li>
+    </ol>
+    <div class="tablewrap">
+      <table class="fill">
+        <thead><tr><th>Start x</th><th>Swept</th><th>Good range (on at t0, t1, t2)</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">0.3</td><td class="mono">vy</td><td><input id="q5r1" style="width:160px" aria-label="good range for x 0.3"></td></tr>
+          <tr><td class="mono">0.6</td><td class="mono">vy</td><td><input id="q5r2" style="width:160px" aria-label="good range for x 0.6"></td></tr>
+          <tr><td class="mono">−0.3</td><td class="mono">vy</td><td><input id="q5r3" style="width:160px" aria-label="good range for x minus 0.3"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hints">
+      <details><summary>Hint 1</summary><p>The map is linear (step 3). If you double the start position, what do you think happens to the velocity that cancels the drift?</p></details>
+      <details><summary>Hint 2</summary><p>Compare with Question 3: you're looking for the velocity that puts the satellite "in the same lane timing" as the mothership.</p></details>
+    </div>
+    <textarea id="q5a" placeholder="What I saw… my rule for the good velocity is…"></textarea>
+    <div class="btnrow"><button type="button" class="primary" data-copy="q5">Copy answer</button></div>
+  </article>
+
+</section>
+
+<footer class="note">Built from your files <code>grail_eval.py</code> and <code>experiments.py</code> and the official ESA SpOC3 code. The pictures are simplified sketches; the scoring steps and numbers match the code.</footer>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  // grid: g cells, size px, at (ox, oy); returns group
+  function grid(parent, ox, oy, g, size, frameClass) {
+    var G = el("g", { transform: "translate(" + ox + "," + oy + ")" }, parent);
+    var cs = size / g;
+    for (var i = 1; i < g; i++) {
+      el("line", { class: "s-grid", x1: i * cs, y1: 0, x2: i * cs, y2: size }, G);
+      el("line", { class: "s-grid", x1: 0, y1: i * cs, x2: size, y2: i * cs }, G);
+    }
+    el("rect", { class: frameClass || "s-frame", x: 0, y: 0, width: size, height: size }, G);
+    return { g: G, cs: cs, size: size, n: g };
+  }
+  function cellCenter(gr, i, j) { // i = column (x), j = row (y, up)
+    return [(i + 0.5) * gr.cs, (gr.n - 1 - j + 0.5) * gr.cs];
+  }
+
+  // ---- Fig: snapshots ----
+  (function () {
+    var s = document.getElementById("figSnap");
+    var base = 130, big = base * 1.23, cy = 150;
+    var sats = [[-0.4, -0.2], [0.3, 0.25], [0.1, -0.5], [-0.6, 0.5]];
+    var drift = [[0.15, 0.2], [0.15, 0.95], [0.15, 1.6]]; // orange satellite in true units per time
+    var frames = [
+      { x: 20, size: base, label: "t0 (start)", sub: "grid as given" },
+      { x: 230, size: big, label: "t1 (1 orbit)", sub: "positions ÷ 1.23" },
+      { x: 460, size: big, label: "t2 (2 orbits)", sub: "positions ÷ 1.23" }
+    ];
+    frames.forEach(function (f, k) {
+      var oy = cy - f.size / 2;
+      var gr = grid(s, f.x, oy, 11, f.size);
+      el("text", { class: "s-label", x: f.x, y: oy - 22 }, s, f.label);
+      el("text", { class: "s-small", x: f.x, y: oy - 8 }, s, f.sub);
+      var half = f.size / 2;
+      sats.forEach(function (p) {
+        el("circle", { class: "s-dot", cx: half + p[0] * base / 2, cy: half - p[1] * base / 2, r: 5 }, gr.g);
+      });
+      var d = drift[k];
+      var px = half + d[0] * base / 2, py = half - d[1] * base / 2;
+      el("circle", { class: "s-dot-warm", cx: px, cy: py, r: 6 }, gr.g);
+      if (k === 2) {
+        el("line", { class: "s-x", x1: px - 7, y1: py - 7, x2: px + 7, y2: py + 7 }, gr.g);
+        el("line", { class: "s-x", x1: px - 7, y1: py + 7, x2: px + 7, y2: py - 7 }, gr.g);
+        el("text", { class: "s-small", x: px + 12, y: py + 4 }, gr.g, "off grid → dropped");
+      }
+    });
+  })();
+
+  // ---- Fig: snapping ----
+  (function () {
+    var s = document.getElementById("figSnapCells");
+    var gr = grid(s, 20, 10, 11, 230);
+    var pts = [[2.3, 3.7], [5.6, 5.2], [8.2, 8.4], [8.7, 8.8], [3.4, 7.9], [6.8, 1.6]];
+    var seen = {};
+    pts.forEach(function (p) {
+      var i = Math.floor(p[0]), j = Math.floor(p[1]);
+      var key = i + "," + j;
+      if (!seen[key]) {
+        seen[key] = 1;
+        el("rect", { class: "s-cell", x: i * gr.cs, y: (gr.n - 1 - j) * gr.cs, width: gr.cs, height: gr.cs }, gr.g);
+      }
+    });
+    pts.forEach(function (p) {
+      el("circle", { class: "s-hollow", cx: p[0] * gr.cs, cy: (gr.n - p[1]) * gr.cs, r: 5 }, gr.g);
+    });
+    var t = el("g", { transform: "translate(290,40)" }, s);
+    el("text", { class: "s-label", x: 0, y: 0 }, t, "Square number for one axis");
+    el("text", { class: "s-text", x: 0, y: 30 }, t, "square = int( position × g/2 + g//2 )");
+    el("text", { class: "s-small", x: 0, y: 60 }, t, "g = 11:   −0.99 → 0     0.00 → 5     0.99 → 10");
+    el("text", { class: "s-text", x: 0, y: 100 }, t, "6 satellites, but only 5 shaded squares:");
+    el("text", { class: "s-text", x: 0, y: 122 }, t, "two of them share one square.");
+  })();
+
+  // ---- Fig: shadows ----
+  (function () {
+    var s = document.getElementById("figShadows");
+    var specs = [
+      { x: 20, label: "XY  (ignore z)", ax: ["x", "y"], c: [2, 7] },
+      { x: 235, label: "XZ  (ignore y)", ax: ["x", "z"], c: [2, 4] },
+      { x: 450, label: "YZ  (ignore x)", ax: ["y", "z"], c: [7, 4] }
+    ];
+    specs.forEach(function (sp) {
+      el("text", { class: "s-label", x: sp.x, y: 20 }, s, sp.label);
+      var gr = grid(s, sp.x, 32, 11, 165);
+      var c = cellCenter(gr, sp.c[0], sp.c[1]);
+      el("rect", { class: "s-cell", x: sp.c[0] * gr.cs, y: (gr.n - 1 - sp.c[1]) * gr.cs, width: gr.cs, height: gr.cs }, gr.g);
+      el("circle", { class: "s-dot", cx: c[0], cy: c[1], r: 5 }, gr.g);
+      el("text", { class: "s-small", x: 165 / 2, y: 182, "text-anchor": "middle" }, gr.g, sp.ax[0] + " →");
+      el("text", { class: "s-small", x: -6, y: 165 / 2, "text-anchor": "end" }, gr.g, sp.ax[1] + " ↑");
+      el("text", { class: "s-text", x: 165 + 8, y: c[1] + 4 }, gr.g, "");
+      el("text", { class: "s-small", x: 0, y: 196 }, gr.g, "shadow at (" + sp.c[0] + ", " + sp.c[1] + ")");
+    });
+  })();
+
+  // ---- mini grid in step 7 ----
+  (function () {
+    var g = document.getElementById("miniGrid");
+    for (var i = 0; i <= 5; i++) el("line", { class: "s-grid", x1: i * 40, y1: 0, x2: i * 40, y2: 120 }, g);
+    for (var j = 0; j <= 3; j++) el("line", { class: "s-grid", x1: 0, y1: j * 40, x2: 200, y2: j * 40 }, g);
+    el("rect", { class: "s-frame", x: 0, y: 0, width: 200, height: 120 }, g);
+  })();
+
+  // ---- Q1 ruler ----
+  (function () {
+    var g = document.getElementById("q1ruler");
+    var x0 = 60, unit = 85, y = 150;
+    el("line", { class: "s-ruler", x1: x0 - 10, y1: y, x2: x0 + 6 * unit + 10, y2: y }, g);
+    for (var k = 0; k <= 6; k++) {
+      el("line", { class: "s-tick", x1: x0 + k * unit, y1: y - 6, x2: x0 + k * unit, y2: y + 6 }, g);
+      el("text", { class: "s-small", x: x0 + k * unit, y: y + 24, "text-anchor": "middle" }, g, String(k));
+    }
+    var marks = [0, 1, 3, 6];
+    var pairs = [];
+    for (var a = 0; a < 4; a++) for (var b = a + 1; b < 4; b++) pairs.push([marks[a], marks[b]]);
+    pairs.forEach(function (p) {
+      var xa = x0 + p[0] * unit, xb = x0 + p[1] * unit;
+      var h = 18 + (p[1] - p[0]) * 18;
+      el("path", { class: "s-arc", d: "M" + xa + " " + (y - 8) + " Q " + (xa + xb) / 2 + " " + (y - 8 - 2 * h) + " " + xb + " " + (y - 8) }, g);
+      el("rect", { class: "s-fillbg", x: (xa + xb) / 2 - 9, y: y - 8 - h - 10, width: 18, height: 16, rx: 3 }, g);
+      el("text", { class: "s-label", x: (xa + xb) / 2, y: y - 8 - h + 3, "text-anchor": "middle" }, g, "?");
+    });
+    marks.forEach(function (m) {
+      el("line", { class: "s-mark", x1: x0 + m * unit, y1: y - 14, x2: x0 + m * unit, y2: y + 2 }, g);
+    });
+    el("text", { class: "s-small", x: x0 + 6 * unit + 14, y: y + 4 }, g, "");
+  })();
+
+  // ---- Q2 grids ----
+  (function () {
+    var s = document.getElementById("q2grid");
+    var a = grid(s, 20, 20, 11, 210);
+    [[1, 2], [3, 8], [6, 5], [9, 9], [8, 1]].forEach(function (c) {
+      var p = cellCenter(a, c[0], c[1]);
+      el("circle", { class: "s-dot", cx: p[0], cy: p[1], r: 6 }, a.g);
+    });
+    el("text", { class: "s-small", x: 20, y: 250 }, s, "5 on 121 squares");
+    var b = grid(s, 300, 20, 21, 210);
+    var seed = 7;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    var used = {};
+    var placed = 0;
+    while (placed < 40) {
+      var i = Math.floor(rnd() * 21), j = Math.floor(rnd() * 21);
+      if (used[i + "," + j]) continue;
+      used[i + "," + j] = 1; placed++;
+      var p = cellCenter(b, i, j);
+      el("circle", { class: "s-dot", cx: p[0], cy: p[1], r: 3.5 }, b.g);
+    }
+    el("text", { class: "s-small", x: 300, y: 250 }, s, "40 on 441 squares");
+    el("text", { class: "s-label", x: 540, y: 120 }, s, "how many");
+    el("text", { class: "s-label", x: 540, y: 140 }, s, "ways?");
+  })();
+
+  // ---- Q5 figure ----
+  (function () {
+    var s = document.getElementById("q5fig");
+    var size = 260, ox = 20, oy = 20;
+    var gr = grid(s, ox, oy, 11, size);
+    function P(x, y) { return [(x + 1) / 2 * size, (1 - y) / 2 * size]; }
+    var m = P(0, 0);
+    el("circle", { class: "s-dot-warm", cx: m[0], cy: m[1], r: 6 }, gr.g);
+    el("text", { class: "s-small", x: m[0] - 6, y: m[1] + 20, "text-anchor": "end" }, gr.g, "mothership (0,0)");
+    var p = P(0.3, 0);
+    el("line", { class: "s-arrow", x1: p[0], y1: p[1], x2: p[0] + 50, y2: p[1] }, gr.g);
+    el("path", { class: "s-arrow", d: "M" + (p[0] + 44) + " " + (p[1] - 5) + " L" + (p[0] + 52) + " " + p[1] + " L" + (p[0] + 44) + " " + (p[1] + 5) }, gr.g);
+    el("text", { class: "s-small", x: p[0] + 56, y: p[1] + 4 }, gr.g, "vx ?");
+    el("line", { class: "s-arrow", x1: p[0], y1: p[1], x2: p[0], y2: p[1] - 50 }, gr.g);
+    el("path", { class: "s-arrow", d: "M" + (p[0] - 5) + " " + (p[1] - 44) + " L" + p[0] + " " + (p[1] - 52) + " L" + (p[0] + 5) + " " + (p[1] - 44) }, gr.g);
+    el("text", { class: "s-small", x: p[0] + 6, y: p[1] - 50 }, gr.g, "vy ?");
+    el("circle", { class: "s-dot", cx: p[0], cy: p[1], r: 6 }, gr.g);
+    el("text", { class: "s-small", x: p[0] + 4, y: p[1] + 20 }, gr.g, "(0.3, 0)");
+    var t = el("g", { transform: "translate(320,50)" }, s);
+    el("text", { class: "s-label", x: 0, y: 0 }, t, "Goal");
+    el("text", { class: "s-text", x: 0, y: 26 }, t, "\"on\" at t0, t1 and t2:");
+    el("text", { class: "s-text", x: 0, y: 48 }, t, "every coordinate inside (−1, 1)");
+    el("text", { class: "s-text", x: 0, y: 70 }, t, "after dividing by 1.23 at t1, t2.");
+    el("text", { class: "s-label", x: 0, y: 116 }, t, "Then ask");
+    el("text", { class: "s-text", x: 0, y: 142 }, t, "Does the good velocity change");
+    el("text", { class: "s-text", x: 0, y: 164 }, t, "when the start changes? By how much?");
+  })();
+
+  // ---- Playground ----
+  (function () {
+    var s = document.getElementById("pg");
+    var G = 11, cs = 30;
+    var gr = grid(s, 0, 0, G, 330);
+    var hit = el("rect", { x: 0, y: 0, width: 330, height: 330, fill: "transparent" }, s);
+    var lines = el("g", {}, s), dots = el("g", {}, s);
+    var on = {};
+    var example = [[2, 2], [4, 3], [6, 4], [8, 8]];
+    function keyOf(i, j) { return i + "," + j; }
+    function render() {
+      while (lines.firstChild) lines.removeChild(lines.firstChild);
+      while (dots.firstChild) dots.removeChild(dots.firstChild);
+      var pts = Object.keys(on).map(function (k) { return k.split(",").map(Number); });
+      var n = pts.length, count = {};
+      for (var a = 0; a < n; a++) for (var b = 0; b < n; b++) if (a !== b) {
+        var k = (pts[b][0] - pts[a][0]) + "," + (pts[b][1] - pts[a][1]);
+        count[k] = (count[k] || 0) + 1;
+      }
+      var reps = [];
+      for (var a2 = 0; a2 < n; a2++) for (var b2 = a2 + 1; b2 < n; b2++) {
+        var dx = pts[b2][0] - pts[a2][0], dy = pts[b2][1] - pts[a2][1];
+        var bad = count[dx + "," + dy] > 1;
+        var p = cellCenter(gr, pts[a2][0], pts[a2][1]), q = cellCenter(gr, pts[b2][0], pts[b2][1]);
+        el("line", { class: bad ? "s-arrow-bad" : "s-arrow", x1: p[0], y1: p[1], x2: q[0], y2: q[1], opacity: bad ? 1 : 0.45 }, lines);
+        if (bad) {
+          var nx = Math.abs(dx), ny = dy * Math.sign(dx || 1); if (dx === 0) ny = Math.abs(dy);
+          var lab = "(" + nx + "," + ny + ")";
+          if (reps.indexOf(lab) < 0) reps.push(lab);
+        }
+      }
+      pts.forEach(function (c) {
+        var p = cellCenter(gr, c[0], c[1]);
+        el("circle", { class: "s-dot", cx: p[0], cy: p[1], r: 9 }, dots);
+      });
+      var distinct = Object.keys(count).length + (n > 0 ? 1 : 0);
+      document.getElementById("pgN").textContent = n;
+      document.getElementById("pgPairs").textContent = n * (n - 1) / 2;
+      document.getElementById("pgDistinct").textContent = distinct;
+      document.getElementById("pgMax").textContent = n > 0 ? n * (n - 1) + 1 : 0;
+      document.getElementById("pgFF").textContent = distinct + "/441 = " + (distinct / 441).toFixed(4);
+      var st = document.getElementById("pgStatus");
+      if (reps.length) {
+        st.className = "pill bad"; st.textContent = "repeated arrows";
+        document.getElementById("pgRepeats").textContent = "Same arrow used by more than one pair: " + reps.join("  ");
+      } else {
+        st.className = "pill ok"; st.textContent = "no repeats";
+        document.getElementById("pgRepeats").textContent = n > 1 ? "Every pair has its own arrow." : "Add at least two satellites.";
+      }
+    }
+    s.addEventListener("click", function (ev) {
+      var r = s.getBoundingClientRect();
+      var x = (ev.clientX - r.left) / r.width * 330, y = (ev.clientY - r.top) / r.height * 330;
+      var i = Math.floor(x / cs), j = G - 1 - Math.floor(y / cs);
+      if (i < 0 || i >= G || j < 0 || j >= G) return;
+      var k = keyOf(i, j);
+      if (on[k]) delete on[k]; else on[k] = 1;
+      render();
+    });
+    document.getElementById("pgClear").addEventListener("click", function () { on = {}; render(); });
+    document.getElementById("pgExample").addEventListener("click", function () {
+      on = {}; example.forEach(function (c) { on[keyOf(c[0], c[1])] = 1; }); render();
+    });
+    example.forEach(function (c) { on[keyOf(c[0], c[1])] = 1; });
+    render();
+  })();
+
+  // ---- Converter ----
+  (function () {
+    var inp = document.getElementById("convIn"), out = document.getElementById("convOut");
+    inp.addEventListener("input", function () {
+      var v = Number(inp.value.replace(/[,_\s]/g, ""));
+      if (!inp.value.trim()) { out.textContent = "type a number (1e9 style is fine)"; return; }
+      if (!isFinite(v) || v < 0) { out.textContent = "That isn't a number. Try something like 2.5e8."; return; }
+      var sec = v * 0.001;
+      var parts = [];
+      parts.push(sec.toPrecision(3) + " s");
+      parts.push((sec / 3600).toPrecision(3) + " hours");
+      parts.push((sec / 86400 / 365.25).toPrecision(3) + " years");
+      parts.push((sec / 4.35e17).toPrecision(3) + " × age of the universe");
+      out.textContent = "= " + parts.join("  ·  ");
+    });
+  })();
+
+  // ---- Answer drafts and copy ----
+  (function () {
+    var fields = document.querySelectorAll("textarea, .fill input");
+    fields.forEach(function (f) {
+      try { var v = localStorage.getItem("grail-" + f.id); if (v) f.value = v; } catch (e) {}
+      f.addEventListener("input", function () { try { localStorage.setItem("grail-" + f.id, f.value); } catch (e) {} });
+    });
+    document.querySelectorAll("[data-copy]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var q = btn.getAttribute("data-copy");
+        var card = document.getElementById(q);
+        var title = card.querySelector("h3").textContent;
+        var lines = ["Q" + title];
+        card.querySelectorAll(".fill tr").forEach(function (tr, idx) {
+          if (idx === 0 && card.querySelector(".fill thead")) return;
+        });
+        var ins = card.querySelectorAll(".fill input");
+        if (ins.length) {
+          var vals = [];
+          ins.forEach(function (i) { vals.push((i.getAttribute("aria-label") || i.id) + ": " + (i.value || "—")); });
+          lines.push(vals.join("; "));
+        }
+        var ta = card.querySelector("textarea");
+        lines.push(ta.value || "(no answer written yet)");
+        var text = lines.join("\n");
+        var done = function () { var o = btn.textContent; btn.textContent = "Copied"; setTimeout(function () { btn.textContent = o; }, 1500); };
+        var fallback = function () { ta.focus(); ta.select(); btn.textContent = "Select and copy the text"; };
+        try {
+          navigator.clipboard.writeText(text).then(done, fallback);
+        } catch (e) { fallback(); }
+      });
+    });
+  })();
+})();
+</script>
