@@ -14,7 +14,7 @@ The score is the worst of the three snapshots. Lower fitness is better.
 | Instance | Satellites | Fitness | Best possible |
 |---|---|---|---|
 | tiny-observatory-in-dro | 5 | **−0.1429** | −0.1429 (optimal) |
-| large-observatory-in-dro | 40 | **−1.40** | −2.79 (upper bound, probably unreachable) |
+| large-observatory-in-dro | 40 | **−1.42** | −2.79 (upper bound, probably unreachable) |
 | large-observatory-in-halo | 40 | **−1.23** | −2.79 (upper bound, probably unreachable) |
 
 Solutions are in `solutions/` in the competition's submission format.
