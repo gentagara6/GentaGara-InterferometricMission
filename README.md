@@ -46,6 +46,8 @@ Solutions are in `solutions/` in the competition's submission format.
 | `recipes.py` | Prints the STM "recipes" for y at t1 and t2 |
 | `grail_study_guide.html` | Visual study notes |
 | `solutions/*.json` | Best solutions found |
+| `compare.py` | Compares 4 algorithms (random, random + calculated velocities, hill climbing, simulated annealing) on the same evaluation budget → `results/comparison.json` |
+| `visualize.py`, `results_template.html` | Builds `results/grail_results.html`: animation of each solution, its scored shadows and baselines, the algorithm comparison, and the orbit eigenvalues |
 
 ## Run
 
@@ -54,6 +56,13 @@ pip install -r requirements.txt
 python solver.py tiny          # about 10 s
 python solver.py large-dro     # about 2 min
 python solver.py large-halo    # about 2 min
+```
+
+Then, for the results page (open `results/grail_results.html` in a browser):
+
+```bash
+python compare.py       # about 5 min
+python visualize.py
 ```
 
 Use `--seed N` to try a different random search and `--iters N` for a longer one.

@@ -1,0 +1,612 @@
+<title>GRAIL Results</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a results report — headline numbers, method strip, then one interactive section per question (what the solutions look like, how the algorithms compare, why the halo is harder). */
+:root {
+  --bg: #f3f5f8;
+  --surface: #fcfcfb;
+  --fg: #0f1729;
+  --muted: #5a6478;
+  --faint: #898781;
+  --line: #dde1ea;
+  --grid: #e8ebf1;
+  --axis: #c3c2b7;
+  --accent: #2a78d6;
+  --accent-soft: #e2edfb;
+  --cell-empty: #eef1f6;
+  --good: #0ca30c;
+  --good-soft: #e1f3e1;
+  --warn: #b35c00;
+  --warn-soft: #fbeedd;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1017; --surface: #1a1a19; --fg: #f0efec; --muted: #b3b8c4; --faint: #898781;
+    --line: #2c2f38; --grid: #26282d; --axis: #383835; --accent: #3987e5; --accent-soft: #1b2b44;
+    --cell-empty: #22252b; --good: #0ca30c; --good-soft: #15301a; --warn: #f2a65c; --warn-soft: #3a2a17;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1017; --surface: #1a1a19; --fg: #f0efec; --muted: #b3b8c4; --faint: #898781;
+  --line: #2c2f38; --grid: #26282d; --axis: #383835; --accent: #3987e5; --accent-soft: #1b2b44;
+  --cell-empty: #22252b; --good: #0ca30c; --good-soft: #15301a; --warn: #f2a65c; --warn-soft: #3a2a17;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); letter-spacing: -0.02em; }
+h2 { font-size: 1.55rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--font-mono); }
+section, header { display: flex; flex-direction: column; gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.note { font-size: 0.85rem; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* headline tiles */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .tiles { grid-template-columns: 1fr; } }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.tile .name { font-family: var(--font-display); font-weight: 600; }
+.tile .big { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
+.tile .sub { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meter { height: 6px; border-radius: 3px; background: var(--cell-empty); overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; width: fit-content; }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+
+/* method strip */
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.flow .box { flex: 1 1 150px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.flow .box b { font-family: var(--font-display); font-weight: 600; }
+.flow .box span { font-size: 0.82rem; color: var(--muted); }
+.flow .box.key { border-color: var(--accent); }
+.ideas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .ideas { grid-template-columns: 1fr; } }
+.ideas div { display: flex; flex-direction: column; gap: 4px; }
+.ideas b { font-family: var(--font-display); }
+
+/* tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { font: inherit; font-size: 0.9rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; font-size: 0.82rem; border: 0; background: var(--surface); color: var(--fg); padding: 4px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.btn { font: inherit; font-size: 0.85rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 4px 12px; border-radius: 6px; cursor: pointer; }
+.btn:hover, .tabs button:hover, .seg button:hover { border-color: var(--accent); }
+
+/* solution layout */
+.solgrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .solgrid { grid-template-columns: 1fr; } }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#anim { width: 100%; height: auto; display: block; max-width: 460px; margin: 0 auto; }
+#timeSlider { width: 100%; accent-color: var(--accent); }
+.statusline { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.snapmatrix { display: grid; grid-template-columns: auto repeat(3, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.snapmatrix .colhead { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); text-align: center; }
+.snapmatrix .rowhead { font-size: 0.8rem; display: flex; flex-direction: column; gap: 3px; padding-right: 4px; }
+.snapmatrix .rowhead b { font-family: var(--font-display); }
+.snap { border: 1px solid var(--line); border-radius: 6px; padding: 4px; background: var(--surface); cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.snap[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.snap svg { width: 100%; height: auto; display: block; }
+.snap .ffv { font-family: var(--font-mono); font-size: 0.72rem; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.arrowgrid { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 560px) { .arrowgrid { grid-template-columns: 1fr; } }
+#arrowMap { width: 100%; height: auto; display: block; }
+
+/* svg classes */
+.c-empty { fill: var(--cell-empty); }
+.c-occ { fill: var(--accent); }
+.c-zero { fill: var(--fg); }
+.g-line { stroke: var(--grid); stroke-width: 1; fill: none; }
+.g-box { stroke: var(--axis); stroke-width: 1.5; fill: none; }
+.g-box-dash { stroke: var(--faint); stroke-width: 1; fill: none; stroke-dasharray: 4 4; }
+.dot-on { fill: var(--accent); stroke: var(--surface); stroke-width: 1.5; }
+.dot-off { fill: var(--surface); stroke: var(--faint); stroke-width: 1.5; }
+.mother { stroke: var(--fg); stroke-width: 1.5; }
+.t-axis { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.t-label { fill: var(--fg); font-family: var(--font-body); font-size: 12px; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.l1 { stroke: var(--s1); } .l2 { stroke: var(--s2); } .l3 { stroke: var(--s3); } .l4 { stroke: var(--s4); }
+.f1 { fill: var(--s1); } .f2 { fill: var(--s2); } .f3 { fill: var(--s3); } .f4 { fill: var(--s4); }
+.line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.band { stroke: none; opacity: 0.14; }
+.ring { stroke: var(--surface); stroke-width: 2; }
+
+/* tables */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr.worst td { background: var(--warn-soft); }
+td.best { font-weight: 600; }
+
+/* chart */
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.chartbox { position: relative; }
+#convChart { width: 100%; height: auto; display: block; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.8rem; box-shadow: 0 4px 14px rgba(0,0,0,0.12); font-variant-numeric: tabular-nums; min-width: 170px; }
+.tip .row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.tip .row span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.tip i { width: 10px; height: 3px; display: inline-block; border-radius: 2px; }
+.bg1 { background: var(--s1); } .bg2 { background: var(--s2); } .bg3 { background: var(--s3); } .bg4 { background: var(--s4); }
+.findings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .findings { grid-template-columns: 1fr; } }
+.findings div { display: flex; flex-direction: column; gap: 4px; }
+.findings b { font-family: var(--font-display); }
+footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">ESA SpOC 3 · GECCO 2024 · Interferometric Mission (GRAIL)</div>
+  <h1>GRAIL Results</h1>
+  <p class="lede">Satellites around a mothership in an Earth–Moon orbit form one large telescope. Each satellite gets a start position and velocity; the goal is that every baseline (the arrow between two satellites) is different, after 0, 1 and 2 orbits. Fitness is minus the summed fill factor of the XY, XZ and YZ planes at the worst of the three snapshots; lower is better.</p>
+  <div class="tiles" id="tiles"></div>
+  <p class="note">The bound assumes every pair gives a new arrow in every plane at every snapshot (n(n−1)+1 arrows out of (2g−1)² per plane). For 40 satellites it is probably not reachable.</p>
+</header>
+
+<section id="method">
+  <div class="eyebrow">Method</div>
+  <h2>Search the positions, calculate the velocities</h2>
+  <div class="flow">
+    <div class="box"><b>Random start</b><span>40 positions near the mothership</span></div>
+    <div class="box key"><b>Change one satellite</b><span>nudge 50% · jump 20% · fine-tune velocity 30%</span></div>
+    <div class="box key"><b>Calculate its velocity</b><span>least squares: stay in the same square at t1 and t2</span></div>
+    <div class="box key"><b>Score it</b><span>count distinct arrows directly, 0.9 ms instead of 2.0 ms</span></div>
+    <div class="box key"><b>Keep or undo</b><span>simulated annealing: worse moves sometimes kept, less as it cools</span></div>
+    <div class="box"><b>Official check</b><span>re-scored with the ESA logic, saved if better</span></div>
+  </div>
+  <div class="ideas">
+    <div><b>Brute force is impossible</b><span class="muted">441 choose 40 ≈ 1.2 × 10⁵⁷ placements, about 10³⁶ ages of the universe at 1 ms each, before even choosing velocities.</span></div>
+    <div><b>The physics is linear</b><span class="muted">Position at any snapshot = STM × start state. So the 3 velocities can be solved from the 3 positions: 6 targets, 3 unknowns, least squares.</span></div>
+    <div><b>Local search finds the pattern</b><span class="muted">Only one satellite changes per step, so a good pattern isn't destroyed; equal moves let the search wander across flat areas of the score.</span></div>
+  </div>
+</section>
+
+<section id="solutions">
+  <div class="eyebrow">Solutions</div>
+  <h2>What each solution looks like</h2>
+  <div class="tabs" role="tablist" id="instTabs"></div>
+  <div class="solgrid">
+    <div class="card">
+      <div class="controls" style="justify-content:space-between">
+        <h3>The swarm over two orbits</h3>
+        <div class="seg" id="planeSeg"></div>
+      </div>
+      <svg id="anim" viewBox="0 0 400 400" role="img" aria-label="Satellite positions relative to the mothership over two orbits"></svg>
+      <input type="range" id="timeSlider" min="0" max="96" value="0" aria-label="Time in orbits">
+      <div class="controls">
+        <button class="btn" id="playBtn" type="button">Play</button>
+        <button class="btn" type="button" data-jump="0">t0</button>
+        <button class="btn" type="button" data-jump="1">t1 · 1 orbit</button>
+        <button class="btn" type="button" data-jump="2">t2 · 2 orbits</button>
+      </div>
+      <div class="statusline" id="animStatus"></div>
+      <p class="note">Positions as seen on the grid: the grid (solid square) grows to 1.23× during the first orbit. Hollow dots are off the grid in at least one coordinate and don't count. Dashed square = the grid's edge at t0.</p>
+    </div>
+    <div class="card">
+      <h3>The nine scored shadows</h3>
+      <div class="snapmatrix" id="snapMatrix"></div>
+      <p class="note">Blue squares are occupied. The highlighted row is the worst snapshot, which sets the score. Click any shadow to see its baselines below.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3 id="arrowTitle">Baselines covered</h3>
+    <div class="arrowgrid">
+      <svg id="arrowMap" role="img" aria-label="Map of distinct baselines in the selected shadow"></svg>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <p id="arrowText"></p>
+        <div class="tablewrap"><table id="ffTable"></table></div>
+        <p class="note" id="fitLine"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="algorithms">
+  <div class="eyebrow">Algorithms</div>
+  <h2>Four algorithms, same number of evaluations</h2>
+  <p class="muted" id="compIntro"></p>
+  <div class="tabs" role="tablist" id="compTabs"></div>
+  <div class="card">
+    <div class="legend" id="legend"></div>
+    <div class="chartbox" id="chartBox">
+      <svg id="convChart" viewBox="0 0 760 360" role="img" aria-label="Best fitness found versus number of evaluations for four algorithms"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <p class="note">Lines: average best fitness over the runs. Shaded: best and worst run. Lower is better.</p>
+  </div>
+  <div class="tablewrap"><table id="compTable"></table></div>
+  <div class="findings">
+    <div><b>Calculated velocities matter most</b><span class="muted">Random velocities make nearly every satellite drift off the grid, so pure random search stays near 0. Calculating the velocities from the positions turns random guesses into usable solutions; on the tiny instance that alone finds the optimum.</span></div>
+    <div><b>Local search does the rest</b><span class="muted">On 40 satellites, hill climbing and simulated annealing build far better patterns than random guessing. On this short budget hill climbing is ahead, because annealing spends its early steps exploring; in longer runs (100,000 evaluations) the two ended about equal.</span></div>
+  </div>
+</section>
+
+<section id="physics">
+  <div class="eyebrow">Physics</div>
+  <h2>Why the halo instance is harder</h2>
+  <div class="card">
+    <svg id="eigen" viewBox="0 0 760 170" role="img" aria-label="One-orbit eigenvalue magnitudes for the DRO and halo orbits"></svg>
+    <p class="note">Magnitude of the eigenvalues of the one-orbit STM: how much a special start direction is stretched per orbit.</p>
+  </div>
+  <p>In the DRO every direction keeps its size, so one pattern looks the same at t1 and t2. The halo stretches one direction by 1.19 per orbit and squeezes another by 0.84. The grid's 1.23 inflation covers one orbit of stretching but not two (1.19² = 1.42), and the squeezed direction pushes satellites into shared squares. One pattern can't fit all three snapshots, so the halo scores lower.</p>
+</section>
+
+<footer>
+  <span>Reproduce: <code>python solver.py tiny</code> · <code>python compare.py</code> · <code>python visualize.py</code></span>
+  <span>Physics by SciPy (DOP853, tolerance 1e-13) instead of heyoka; scores match the official ESA code. Every solution on this page is re-scored with the official logic.</span>
+</footer>
+</div>
+
+<script>
+const DATA = __GRAIL_DATA__;
+(function () {
+  const NS = "http://www.w3.org/2000/svg";
+  const PLANES = [["XY", 0, 1], ["XZ", 0, 2], ["YZ", 1, 2]];
+  const TIMES = ["t0 · start", "t1 · 1 orbit", "t2 · 2 orbits"];
+  function el(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+  const fmt = (v, d = 4) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(d);
+
+  // ---------------- tiles ----------------
+  const tiles = document.getElementById("tiles");
+  DATA.instances.forEach(inst => {
+    const pct = inst.fitness / inst.bound;
+    const t = document.createElement("div");
+    t.className = "tile";
+    const optimal = Math.abs(inst.fitness - inst.bound) < 1e-6;
+    t.innerHTML = `<div class="name">${inst.label}</div>
+      <div class="sub">${inst.N} satellites · ${inst.g} × ${inst.g} grid</div>
+      <div class="big">${fmt(inst.fitness, 3)}</div>
+      <div class="meter"><span style="width:${(pct * 100).toFixed(1)}%"></span></div>
+      <div class="sub">${(pct * 100).toFixed(0)}% of the bound ${fmt(inst.bound, 3)}</div>
+      ${optimal ? '<span class="pill good">✓ optimal</span>' : ""}`;
+    tiles.appendChild(t);
+  });
+
+  // ---------------- solutions ----------------
+  let inst = DATA.instances[0], plane = 0, frame = 0, sel = [0, 0], timer = null;
+  const instTabs = document.getElementById("instTabs");
+  DATA.instances.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.role = "tab"; b.textContent = d.label;
+    b.setAttribute("aria-selected", i === 0);
+    b.addEventListener("click", () => {
+      inst = d; sel = [d.worst, 0];
+      instTabs.querySelectorAll("button").forEach(x => x.setAttribute("aria-selected", x === b));
+      renderSolution();
+    });
+    instTabs.appendChild(b);
+  });
+  const planeSeg = document.getElementById("planeSeg");
+  PLANES.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = p[0]; b.setAttribute("aria-pressed", i === 0);
+    b.addEventListener("click", () => {
+      plane = i;
+      planeSeg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      drawAnim();
+    });
+    planeSeg.appendChild(b);
+  });
+
+  const anim = document.getElementById("anim"), slider = document.getElementById("timeSlider");
+  const R = 1.6, W = 400;
+  const map = v => (v + R) / (2 * R) * W;
+  function drawAnim() {
+    clear(anim);
+    const fpo = inst.framesPerOrbit, g = inst.g;
+    const grow = 1;  // positions are already "as seen on the grid"
+    // grid
+    const lo = map(-1), hi = map(1), cs = (hi - lo) / g;
+    el("rect", { x: 0, y: 0, width: W, height: W, class: "c-empty", opacity: 0.35 }, anim);
+    for (let i = 1; i < g; i++) {
+      el("line", { class: "g-line", x1: lo + i * cs, y1: lo, x2: lo + i * cs, y2: hi }, anim);
+      el("line", { class: "g-line", x1: lo, y1: lo + i * cs, x2: hi, y2: lo + i * cs }, anim);
+    }
+    el("rect", { class: "g-box", x: lo, y: lo, width: hi - lo, height: hi - lo }, anim);
+    // t0 grid edge as seen on the grown grid
+    const s = 1 + 0.23 * Math.min(frame / fpo, 1);
+    if (frame > 0) { const a = map(-1 / s), b = map(1 / s); el("rect", { class: "g-box-dash", x: a, y: a, width: b - a, height: b - a }, anim); }
+    const [, ia, ib] = PLANES[plane];
+    el("text", { class: "t-axis", x: W - 8, y: W - 8, "text-anchor": "end" }, anim, PLANES[plane][0][0] + " →");
+    el("text", { class: "t-axis", x: 8, y: 16 }, anim, PLANES[plane][0][1] + " ↑");
+    // mothership
+    const c = map(0);
+    el("line", { class: "mother", x1: c - 6, y1: c, x2: c + 6, y2: c }, anim);
+    el("line", { class: "mother", x1: c, y1: c - 6, x2: c, y2: c + 6 }, anim);
+    const pts = inst.frames[frame];
+    let on = 0, outside = 0;
+    const r = inst.N > 10 ? 4.5 : 7;
+    pts.forEach(p => {
+      const isOn = Math.abs(p[0]) < 1 && Math.abs(p[1]) < 1 && Math.abs(p[2]) < 1;
+      if (isOn) on++;
+      const u = p[ia], v = p[ib];
+      if (Math.abs(u) > R || Math.abs(v) > R) { outside++; return; }
+      el("circle", { cx: map(u), cy: W - map(v), r, class: isOn ? "dot-on" : "dot-off" }, anim);
+    });
+    const orbits = frame / fpo;
+    document.getElementById("animStatus").textContent =
+      `t = ${orbits.toFixed(2)} orbits · ${on} of ${inst.N} on the grid` + (outside ? ` · ${outside} beyond this view` : "");
+    slider.value = frame;
+  }
+  slider.addEventListener("input", () => { frame = +slider.value; drawAnim(); });
+  const playBtn = document.getElementById("playBtn");
+  function stop() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "Play"; } }
+  playBtn.addEventListener("click", () => {
+    if (timer) { stop(); return; }
+    playBtn.textContent = "Pause";
+    timer = setInterval(() => { frame = (frame + 1) % inst.frames.length; drawAnim(); }, 70);
+  });
+  document.querySelectorAll("[data-jump]").forEach(b => b.addEventListener("click", () => {
+    stop(); frame = +b.dataset.jump * inst.framesPerOrbit; drawAnim();
+  }));
+
+  function projected(k, p) {
+    const [, a, b] = PLANES[p];
+    const set = new Map();
+    inst.snaps[k].cells.forEach(c => { if (c) set.set(c[a] * inst.g + c[b], [c[a], c[b]]); });
+    return [...set.values()];
+  }
+  function drawSmallGrid(svg, g, pts, size) {
+    const cs = size / g;
+    el("rect", { x: 0, y: 0, width: size, height: size, class: "c-empty" }, svg);
+    for (let i = 1; i < g; i++) {
+      el("line", { class: "g-line", x1: i * cs, y1: 0, x2: i * cs, y2: size, style: "stroke:var(--surface)" }, svg);
+      el("line", { class: "g-line", x1: 0, y1: i * cs, x2: size, y2: i * cs, style: "stroke:var(--surface)" }, svg);
+    }
+    pts.forEach(([u, w]) => {
+      const r = el("rect", { x: u * cs + 0.5, y: (g - 1 - w) * cs + 0.5, width: cs - 1, height: cs - 1, class: "c-occ", rx: 1 }, svg);
+      el("title", {}, r, `square (${u}, ${w})`);
+    });
+  }
+  function renderMatrix() {
+    const m = document.getElementById("snapMatrix");
+    m.innerHTML = '<div></div>' + PLANES.map(p => `<div class="colhead">${p[0]}</div>`).join("");
+    for (let k = 0; k < 3; k++) {
+      const head = document.createElement("div");
+      head.className = "rowhead";
+      head.innerHTML = `<b>${TIMES[k].split(" · ")[0]}</b><span class="muted">${k ? TIMES[k].split(" · ")[1] : "start"}</span>
+        <span class="muted">${inst.snaps[k].onGrid}/${inst.N} on</span>` + (k === inst.worst ? '<span class="pill warn">worst</span>' : "");
+      m.appendChild(head);
+      for (let p = 0; p < 3; p++) {
+        const box = document.createElement("div");
+        box.className = "snap"; box.tabIndex = 0; box.setAttribute("role", "button");
+        box.setAttribute("aria-pressed", sel[0] === k && sel[1] === p);
+        box.setAttribute("aria-label", `${TIMES[k]}, ${PLANES[p][0]} shadow, fill factor ${inst.ff[k][p]}`);
+        const svg = el("svg", { viewBox: "0 0 120 120" }, box);
+        drawSmallGrid(svg, inst.g, projected(k, p), 120);
+        const v = document.createElement("div"); v.className = "ffv"; v.textContent = inst.ff[k][p].toFixed(4);
+        box.appendChild(v);
+        const pick = () => { sel = [k, p]; renderMatrix(); renderArrows(); };
+        box.addEventListener("click", pick);
+        box.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+        m.appendChild(box);
+      }
+    }
+  }
+  function renderArrows() {
+    const [k, p] = sel, g = inst.g, n = 2 * g - 1;
+    const pts = projected(k, p);
+    const cov = new Set();
+    pts.forEach(a => pts.forEach(b => cov.add((b[0] - a[0] + g - 1) * n + (b[1] - a[1] + g - 1))));
+    const svg = document.getElementById("arrowMap");
+    clear(svg);
+    const size = 240, cs = size / n;
+    svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const isCov = cov.has(i * n + j), zero = i === g - 1 && j === g - 1;
+      el("rect", { x: i * cs + 0.3, y: (n - 1 - j) * cs + 0.3, width: cs - 0.6, height: cs - 0.6,
+        class: zero ? "c-zero" : isCov ? "c-occ" : "c-empty" }, svg);
+    }
+    document.getElementById("arrowTitle").textContent = `Baselines covered · ${TIMES[k]} · ${PLANES[p][0]} shadow`;
+    const max = inst.N * (inst.N - 1) + 1;
+    document.getElementById("arrowText").innerHTML =
+      `Each square is one possible arrow (Δ${PLANES[p][0][0]}, Δ${PLANES[p][0][1]}) between two occupied squares; the centre is the zero arrow. ` +
+      `This shadow has <b>${pts.length}</b> occupied squares and covers <b>${cov.size}</b> of the ${n * n} possible arrows: ` +
+      `fill factor ${cov.size}/${n * n} = <b>${(cov.size / (n * n)).toFixed(4)}</b>. With ${inst.N} satellites at most ${max} arrows are possible.`;
+    const t = document.getElementById("ffTable");
+    let h = "<thead><tr><th>Snapshot</th><th>XY</th><th>XZ</th><th>YZ</th><th>Sum</th></tr></thead><tbody>";
+    inst.ff.forEach((row, i) => {
+      const sum = row.reduce((a, b) => a + b, 0);
+      h += `<tr class="${i === inst.worst ? "worst" : ""}"><td>${TIMES[i]}${i === inst.worst ? " (worst)" : ""}</td>` +
+        row.map(v => `<td>${v.toFixed(4)}</td>`).join("") + `<td>${sum.toFixed(4)}</td></tr>`;
+    });
+    t.innerHTML = h + "</tbody>";
+    document.getElementById("fitLine").textContent = `Fitness = −(sum at the worst snapshot) = ${fmt(inst.fitness)}.`;
+  }
+  function renderSolution() {
+    stop(); frame = 0;
+    slider.max = inst.frames.length - 1;
+    drawAnim(); renderMatrix(); renderArrows();
+  }
+  sel = [inst.worst, 0];
+  renderSolution();
+
+  // ---------------- comparison ----------------
+  const comp = DATA.comparison;
+  const NAMES = { "random": "Random search", "random+vel": "Random + calculated velocities", "hill-climb": "Hill climbing", "annealing": "Simulated annealing" };
+  if (!comp) {
+    document.getElementById("algorithms").innerHTML += '<p class="note">Run <code>python compare.py</code> and then <code>python visualize.py</code> to add this chart.</p>';
+  } else {
+    document.getElementById("compIntro").textContent =
+      `Each algorithm got ${comp.budget.toLocaleString("en")} score evaluations per run, ${comp.seeds} runs each. Same scoring function, same random seeds.`;
+    const compTabs = document.getElementById("compTabs");
+    let cur = DATA.instances[1] ? DATA.instances[1].id : DATA.instances[0].id;
+    DATA.instances.forEach(d => {
+      const b = document.createElement("button");
+      b.type = "button"; b.role = "tab"; b.textContent = d.label;
+      b.setAttribute("aria-selected", d.id === cur);
+      b.addEventListener("click", () => {
+        cur = d.id;
+        compTabs.querySelectorAll("button").forEach(x => x.setAttribute("aria-selected", x === b));
+        drawChart();
+      });
+      compTabs.appendChild(b);
+    });
+    document.getElementById("legend").innerHTML = comp.algorithms.map((a, i) =>
+      `<span><i class="bg${i + 1}"></i>${NAMES[a]}</span>`).join("");
+
+    const svg = document.getElementById("convChart"), tip = document.getElementById("tip"), box = document.getElementById("chartBox");
+    const Wc = 760, Hc = 360, m = { l: 56, r: 150, t: 14, b: 40 };
+    let state = null;
+    function stats(curves) {
+      const n = curves[0].length, mean = [], lo = [], hi = [];
+      for (let i = 0; i < n; i++) {
+        const v = curves.map(c => c[i]);
+        mean.push(v.reduce((a, b) => a + b, 0) / v.length); lo.push(Math.min(...v)); hi.push(Math.max(...v));
+      }
+      return { mean, lo, hi };
+    }
+    function niceStep(range) {
+      const raw = range / 5, p = Math.pow(10, Math.floor(Math.log10(raw)));
+      const f = raw / p;
+      return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+    }
+    function drawChart() {
+      clear(svg);
+      const series = comp.algorithms.map(a => stats(comp.instances[cur][a]));
+      const n = series[0].mean.length;
+      let ymin = Math.min(...series.map(s => Math.min(...s.lo)));
+      const step = niceStep(-ymin);
+      ymin = Math.floor(ymin / step) * step;
+      const X = i => m.l + i / (n - 1) * (Wc - m.l - m.r);
+      const Y = v => m.t + (v / ymin) * (Hc - m.t - m.b);   // 0 at top, ymin at bottom
+      for (let v = 0; v >= ymin - 1e-12; v -= step) {
+        el("line", { class: "gridline", x1: m.l, x2: Wc - m.r, y1: Y(v), y2: Y(v) }, svg);
+        el("text", { class: "t-axis", x: m.l - 8, y: Y(v) + 4, "text-anchor": "end" }, svg, v === 0 ? "0" : fmt(v, step < 0.1 ? 2 : 1));
+      }
+      el("line", { class: "ax", x1: m.l, x2: Wc - m.r, y1: Hc - m.b, y2: Hc - m.b }, svg);
+      for (let q = 0; q <= 4; q++) {
+        const i = q / 4 * (n - 1), evals = Math.round(q / 4 * comp.budget);
+        el("text", { class: "t-axis", x: X(i), y: Hc - m.b + 18, "text-anchor": "middle" }, svg, evals.toLocaleString("en"));
+      }
+      el("text", { class: "t-axis", x: (m.l + Wc - m.r) / 2, y: Hc - 4, "text-anchor": "middle" }, svg, "score evaluations");
+      el("text", { class: "t-axis", x: 4, y: 10 }, svg, "best fitness (lower is better)");
+      series.forEach((s, k) => {
+        let d = s.hi.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+        d += s.lo.map((v, i) => [i, v]).reverse().map(([i, v]) => `L${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("") + "Z";
+        el("path", { d, class: `band f${k + 1}` }, svg);
+      });
+      series.forEach((s, k) => {
+        const d = s.mean.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+        el("path", { d, class: `line l${k + 1}` }, svg);
+      });
+      // direct labels at the right end, pushed apart so they don't overlap
+      const ends = series.map((s, k) => ({ k, y: Y(s.mean[n - 1]), v: s.mean[n - 1] })).sort((a, b) => a.y - b.y);
+      for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
+      ends.forEach(e => {
+        el("circle", { cx: X(n - 1), cy: Y(series[e.k].mean[n - 1]), r: 4, class: `f${e.k + 1} ring` }, svg);
+        el("text", { class: "t-label", x: Wc - m.r + 10, y: e.y + 4 }, svg, `${fmt(e.v, 3)} ${["Random", "Random+vel", "Hill climb", "Annealing"][e.k]}`);
+      });
+      const cross = el("line", { class: "cross", x1: 0, x2: 0, y1: m.t, y2: Hc - m.b, visibility: "hidden" }, svg);
+      const hit = el("rect", { x: m.l, y: m.t, width: Wc - m.l - m.r, height: Hc - m.t - m.b, fill: "transparent" }, svg);
+      state = { series, n, X, cross };
+      const move = ev => {
+        const r = svg.getBoundingClientRect();
+        const sx = (ev.clientX - r.left) / r.width * Wc;
+        const i = Math.max(0, Math.min(n - 1, Math.round((sx - m.l) / (Wc - m.l - m.r) * (n - 1))));
+        cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("visibility", "visible");
+        const evals = Math.round(i / (n - 1) * comp.budget);
+        tip.innerHTML = `<div class="muted" style="margin-bottom:4px">${evals.toLocaleString("en")} evaluations</div>` +
+          series.map((s, k) => ({ k, v: s.mean[i] })).sort((a, b) => a.v - b.v).map(o =>
+            `<div class="row"><span><i class="bg${o.k + 1}"></i>${NAMES[comp.algorithms[o.k]]}</span><span>${fmt(o.v)}</span></div>`).join("");
+        tip.hidden = false;
+        const bx = box.getBoundingClientRect();
+        let left = ev.clientX - bx.left + 14;
+        if (left + tip.offsetWidth > bx.width) left = ev.clientX - bx.left - tip.offsetWidth - 14;
+        tip.style.left = Math.max(0, left) + "px";
+        tip.style.top = Math.max(0, ev.clientY - bx.top - 20) + "px";
+      };
+      hit.addEventListener("pointermove", move);
+      hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+    }
+    drawChart();
+
+    // results table (all instances)
+    let h = "<thead><tr><th>Algorithm</th>" + DATA.instances.map(d => `<th>${d.label}<br>average</th><th>best run</th>`).join("") + "</tr></thead><tbody>";
+    const bestPer = {};
+    DATA.instances.forEach(d => {
+      bestPer[d.id] = Math.min(...comp.algorithms.map(a => {
+        const f = comp.instances[d.id][a].map(c => c[c.length - 1]); return f.reduce((x, y) => x + y, 0) / f.length;
+      }));
+    });
+    comp.algorithms.forEach(a => {
+      h += `<tr><td>${NAMES[a]}</td>`;
+      DATA.instances.forEach(d => {
+        const f = comp.instances[d.id][a].map(c => c[c.length - 1]);
+        const avg = f.reduce((x, y) => x + y, 0) / f.length;
+        h += `<td class="${Math.abs(avg - bestPer[d.id]) < 1e-9 ? "best" : ""}">${fmt(avg)}</td><td>${fmt(Math.min(...f))}</td>`;
+      });
+      h += "</tr>";
+    });
+    document.getElementById("compTable").innerHTML = h + "</tbody>";
+  }
+
+  // ---------------- eigenvalues ----------------
+  (function () {
+    const svg = document.getElementById("eigen"), Wc = 760, l = 90, r = 30;
+    const lo = 0.7, hi = 1.3;
+    const X = v => l + (Math.min(Math.max(v, lo), hi) - lo) / (hi - lo) * (Wc - l - r);
+    const rows = [["DRO", 50], ["Halo", 105]];
+    el("line", { class: "ax", x1: l, x2: Wc - r, y1: 140, y2: 140 }, svg);
+    for (let v = 0.7; v <= 1.301; v += 0.1) {
+      el("line", { class: "gridline", x1: X(v), x2: X(v), y1: 25, y2: 140 }, svg);
+      el("text", { class: "t-axis", x: X(v), y: 158, "text-anchor": "middle" }, svg, v.toFixed(1));
+    }
+    el("line", { class: "cross", x1: X(1), x2: X(1), y1: 18, y2: 140 }, svg);
+    el("text", { class: "t-axis", x: X(1), y: 13, "text-anchor": "middle" }, svg, "1 = keeps its size");
+    el("line", { class: "cross", x1: X(1.23), x2: X(1.23), y1: 18, y2: 140, style: "stroke:var(--warn)" }, svg);
+    el("text", { class: "t-axis", x: X(1.23), y: 13, "text-anchor": "middle" }, svg, "1.23 grid growth");
+    rows.forEach(([name, y]) => {
+      el("text", { class: "t-label", x: 10, y: y + 4, style: "font-weight:600" }, svg, name);
+      const groups = new Map();
+      DATA.eigen[name].forEach(v => { const key = v.toFixed(2); groups.set(key, (groups.get(key) || 0) + 1); });
+      groups.forEach((count, key) => {
+        const v = +key;
+        const c = el("circle", { cx: X(v), cy: y, r: 7, class: Math.abs(v - 1) < 0.02 ? "f1 ring" : "f2 ring" }, svg);
+        el("title", {}, c, `|λ| = ${key}` + (count > 1 ? ` (${count} eigenvalues)` : ""));
+        el("text", { class: "t-label", x: X(v), y: y - 13, "text-anchor": "middle" }, svg, count > 1 ? `${key} ×${count}` : key);
+      });
+    });
+  })();
+})();
+</script>

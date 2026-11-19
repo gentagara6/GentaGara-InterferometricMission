@@ -181,6 +181,8 @@ textarea { width: 100%; min-height: 90px; font: inherit; font-size: 0.95rem; pad
     <a href="#playground">Arrow playground</a>
     <a href="#progress">Your progress</a>
     <a href="#questions">Questions for you</a>
+    <a href="#solver">How solver.py works</a>
+    <a href="#roadmap">Lesson roadmap</a>
   </nav>
   <div class="tablewrap">
     <table>
@@ -567,6 +569,99 @@ textarea { width: 100%; min-height: 90px; font: inherit; font-size: 0.95rem; pad
     <div class="btnrow"><button type="button" class="primary" data-copy="q5">Copy answer</button></div>
   </article>
 
+</section>
+
+<!-- ============================ SOLVER ============================ -->
+<section id="solver">
+  <div class="eyebrow">Part 5</div>
+  <h2>How solver.py works</h2>
+  <p>The solver is your study answers turned into code. Every part exists because of something you found: brute force is impossible (Q2), satellites drift unless pushed (Q3, Q5), and the 3 velocities can be calculated from the 3 positions (Q4).</p>
+  <figure>
+    <div class="flow">
+      <div class="box">random start<br><span class="muted">positions near centre</span></div>
+      <div class="arr">→</div>
+      <div class="box strong">change one satellite<br><span class="muted">random_move</span></div>
+      <div class="arr">→</div>
+      <div class="box strong">score it<br><span class="muted">score</span></div>
+      <div class="arr">→</div>
+      <div class="box strong">keep or undo?<br><span class="muted">anneal</span></div>
+      <div class="arr">↺ 100,000×</div>
+      <div class="arr">→</div>
+      <div class="box">check with official code<br><span class="muted">save to solutions/</span></div>
+    </div>
+    <figcaption>The main loop. The velocity is recalculated inside "change one satellite" whenever its position changes.</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div class="step"><div class="num">A</div><div class="body">
+      <h3><code>__init__</code>: the recipes and the velocity matrix V</h3>
+      <p><strong>What:</strong> keeps only the position rows of the 3 STMs, divides t1 and t2 by 1.23, and builds a 3×3 matrix <span class="mono">V</span> so that <span class="mono">velocity = V × position</span>.</p>
+      <p><strong>Algorithm:</strong> linear least squares. The equations "stay in the same square at t1 and t2" are 6 equations for 3 unknowns, so they're solved as a best compromise with the pseudo-inverse <code>np.linalg.pinv</code>.</p>
+      <p><strong>Why this way:</strong> V is computed once. After that, finding a velocity is one tiny matrix multiplication instead of a search.</p>
+      <div class="formula">V = pinv(A) × (I − B)     →     dvy ≈ 2.61 × dx   (your Q5 rule, row 2 of V)</div>
+    </div></div>
+
+    <div class="step"><div class="num">B</div><div class="body">
+      <h3><code>velocity_for</code>: apply V and respect the bounds</h3>
+      <p><strong>What:</strong> <span class="mono">clip(p @ V.T, −10, 10)</span>.</p>
+      <p><strong>Why:</strong> the competition only allows velocities in [−10, 10]. Clipping keeps every solution valid, even if the compromise asks for more.</p>
+    </div></div>
+
+    <div class="step"><div class="num">C</div><div class="body">
+      <h3><code>score</code>: the fitness, counted directly</h3>
+      <p><strong>What:</strong> the same 8 steps as Part 1 (positions, drop off-grid, snap, shadows, distinct arrows, worst time), but the arrows are counted by taking all pairwise differences of occupied squares and counting the unique ones, instead of a 2D autocorrelation.</p>
+      <p><strong>Why:</strong> speed. It gives the same number as the official code (checked) in about <strong>0.9 ms</strong> instead of <strong>2.0 ms</strong> for 40 satellites, so twice as many search steps fit in the same time. The cost is O(N²) arrows per plane: 1,600 for N = 40.</p>
+    </div></div>
+
+    <div class="step"><div class="num">D</div><div class="body">
+      <h3><code>random_move</code>: three kinds of small change</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Move</th><th>How often</th><th>What it does</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>nudge</td><td>50%</td><td>move one satellite a little, recalculate its velocity</td><td>fine search near a good pattern</td></tr>
+          <tr><td>jump</td><td>20%</td><td>put one satellite anywhere, recalculate its velocity</td><td>escape: try a totally different square</td></tr>
+          <tr><td>fine-tune</td><td>30%</td><td>keep position, adjust velocity a little</td><td>the compromise velocity isn't always best; this lets the search improve it</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Why one satellite at a time:</strong> small changes keep most of a good pattern intact, so the score changes a little instead of jumping randomly.</p>
+    </div></div>
+
+    <div class="step"><div class="num">E</div><div class="body">
+      <h3><code>anneal</code>: simulated annealing</h3>
+      <p><strong>Algorithm:</strong> a local search (a "hiker in fog"). Better or equal moves are always kept. Worse moves are kept with probability <span class="mono">exp((cur − new) / temp)</span>, and the temperature falls linearly to 0, so the search explores early and settles late.</p>
+      <p><strong>What we measured:</strong> on large DRO, no temperature gave −1.39 and −1.42, and temperature 0.01 gave −1.40 and −1.46: about the same. Accepting equal moves (<span class="mono">&lt;=</span>) already lets the search wander across flat areas.</p>
+    </div></div>
+
+    <div class="step"><div class="num">F</div><div class="body">
+      <h3><code>main</code>: check, compare, save</h3>
+      <p><strong>What:</strong> reads the command line, runs the search, re-scores the result with the <strong>official</strong> logic, and saves it only if it beats the saved file.</p>
+      <p><strong>Why:</strong> the fast score is an independent re-implementation, so it's checked against the official code every time. And never overwriting a better file means you can run many seeds safely.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================ ROADMAP ============================ -->
+<section id="roadmap">
+  <div class="eyebrow">Part 6</div>
+  <h2>Lesson roadmap</h2>
+  <p>Physics and code lessons alternate, so each piece of code comes right after the idea behind it.</p>
+  <div class="callout"><strong>Lesson 1 result: the z puzzle</strong><span>To stay in the same square, t1 wants dvz = −7.6 × dz but t2 wants dvz = +6.3 × dz: opposite pushes, so the least-squares compromise is about 0. With no push, z at t1 = −0.45 × dz and z at t2 = −0.32 × dz: the z pattern flips and shrinks toward the centre, more satellites share squares in the XZ and YZ shadows, and those planes score lower at t1 and t2.</span></div>
+  <div class="callout"><strong>Lesson 2 result: least squares in code</strong><span>R keeps only the position rows (scoring never uses later velocities) and is divided by 1.23 at t1 and t2 once, which gives the same result as dividing the positions every time (linearity). V aims for "same square at t1 and t2 as at t0", so one good t0 pattern is copied to all three snapshots. A is 6 × 3 (not square), so <code>solve</code> can't be used; <code>pinv</code> gives the least-squares compromise. <code>velocity_for</code> clips to [−10, 10] to stay within the competition bounds.</span></div>
+  <div class="callout"><strong>Lesson 3 result: counting arrows fast</strong><span>A satellite is kept only if <em>all</em> of x, y, z are inside (−1, 1); <code>any</code> would count drifted satellites. Each square becomes one id (u × g + w, like cinema seat numbers), and <code>unique</code> makes shared squares count once. A table of all differences gives every arrow at once; the diagonal holds the zero arrow, so it's counted automatically. Arrows are encoded with 2g because they can be negative. The fast score matches the official one, and <code>main()</code> re-checks the final answer with the official fitness.</span></div>
+  <div class="callout"><strong>Lesson 4 result: local search and simulated annealing</strong><span>A slightly worse move (−0.01) is accepted with probability exp(−0.01 / temp): 36.8% at the start (temp 0.01) and 0.0045% near the end (temp 0.001), so the search explores early and settles late. Only one satellite changes per step (local search), so a good pattern isn't destroyed. Nudges polish, jumps escape to far squares in one step, and fine-tune adjusts the velocity because the least-squares compromise isn't always best for the score.</span></div>
+  <div class="callout"><strong>Lesson 5 result: halo vs DRO</strong><span>An eigenvalue is the stretch factor per orbit of a special direction. DRO: all size 1, so the pattern seen on the grid is the same at t1 and t2. Halo growing direction (1.19): 0.5 → 0.48 → 0.58 on the grid, because 1.19 &lt; 1.23 but 1.19² = 1.42 &gt; 1.23, so the pattern is slightly too small at t1 and too big at t2. Halo shrinking direction (0.84): 0.5 → 0.34 → 0.29, so satellites merge into shared squares and arrows are lost. Halo XZ plane: 0.43 at t0 but 0.24 at t1. One pattern can't fit all three snapshots, so the halo scores worse (−1.23 vs −1.42).</span></div>
+  <div class="callout"><strong>Lesson 6 result: improving the score</strong><span>Your idea: spread the z positions wider at t0, because z shrinks at t1 and t2. Checked on the saved large-DRO solution: the search already found this (z uses the full −1 to 1 at t0) but the bound stops it there, so z at t1 still only spans −0.45 to 0.45. Next step: choose z values whose <em>shrunk</em> copies (× −0.45 at t1, × −0.32 at t2) still land in different squares, i.e. design the t0 pattern for the snapshot it will become.</span></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Lesson</th><th>Kind</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>The z puzzle: why V's z row is almost 0</td><td>physics</td><td><span class="pill ok">Done</span></td></tr>
+      <tr><td>2</td><td><code>__init__</code> and <code>velocity_for</code>: least squares in code</td><td>code</td><td><span class="pill ok">Done</span></td></tr>
+      <tr><td>3</td><td><code>score</code>: counting arrows fast, and checking it's correct</td><td>code</td><td><span class="pill ok">Done</span></td></tr>
+      <tr><td>4</td><td><code>random_move</code> and <code>anneal</code>: local search and simulated annealing</td><td>algorithm</td><td><span class="pill ok">Done</span></td></tr>
+      <tr><td>5</td><td>Halo vs DRO: why the halo scores worse</td><td>physics</td><td><span class="pill ok">Done</span></td></tr>
+      <tr><td>6</td><td>Designing better patterns: ideas to improve the score</td><td>algorithm</td><td><span class="pill ok">Done</span></td></tr>
+    </tbody>
+  </table></div>
 </section>
 
 <footer class="note">Built from your files <code>grail_eval.py</code> and <code>experiments.py</code> and the official ESA SpOC3 code. The pictures are simplified sketches; the scoring steps and numbers match the code.</footer>

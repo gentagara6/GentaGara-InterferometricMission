@@ -118,12 +118,15 @@ class Solver:
             vel[i] = np.clip(vel[i] + self.rng.normal(0, 0.3, 3), -10, 10)
         return pos, vel
 
-    def anneal(self, iters, temp0):
-        """Simulated annealing over the satellites' start states."""
+    def anneal(self, iters, temp0, verbose=True):
+        """Simulated annealing over the satellites' start states.
+        With temp0 = 0 it becomes plain hill climbing (only better-or-equal moves)."""
         pos = self.rng.uniform(-0.3, 0.3, (self.N, 3))   # start near the centre
         vel = self.velocity_for(pos)
         cur = self.score(pos, vel)
         best, best_pos, best_vel = cur, pos, vel
+        self.history = [(0, best)]                      # (step, best score so far), for plots
+        record_every = max(1, iters // 200)
         start = time.time()
         for it in range(iters):
             temp = temp0 * (1 - it / iters) + 1e-9      # temperature falls to ~0
@@ -135,7 +138,9 @@ class Solver:
                 pos, vel, cur = new_pos, new_vel, new
                 if cur < best:
                     best, best_pos, best_vel = cur, pos, vel
-            if (it + 1) % max(1, iters // 10) == 0:
+            if (it + 1) % record_every == 0:
+                self.history.append((it + 1, best))
+            if verbose and (it + 1) % max(1, iters // 10) == 0:
                 print(f"  step {it + 1:>7}/{iters}   current {cur:.4f}   best {best:.4f}"
                       f"   ({time.time() - start:.0f} s)")
         return best_pos, best_vel
